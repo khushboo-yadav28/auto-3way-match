@@ -143,6 +143,7 @@ The mock ERP frontend will run at:
 ## 👥 Authors & Contributors
 
 * **Khushboo Yadav** – *System Architecture, RPA Pipeline Development, Database Rules Engine, & React Frontend Design*
+* **Mahak Maheshwari** – *Contributor*
 
 ---
 
