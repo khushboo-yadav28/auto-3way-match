@@ -1,0 +1,17 @@
+# docker-compose.yml
+version: '3.8'
+services:
+  frontend-erp:
+    build: ./mock-erp-system
+    ports:
+      - "5173:5173"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+
+  rpa-bot:
+    build: ./rpa_backend
+    volumes:
+      - ./database:/app/database
+      - ./data:/app/data
+    depends_on:
+      - frontend-erp
