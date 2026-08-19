@@ -3,38 +3,43 @@ from playwright.sync_api import sync_playwright
 
 def submit_invoice_to_erp(invoice_data):
     """
-    Process A (Success): Applies Playwright browser automation tools to 
-    automatically log in, wait for human trigger, and fill the target web ERP.
+    Process A (Success): Visually demonstrates the bot logging in, 
+    interacting with the UI dashboard, clicking auxiliary buttons, 
+    and auto-filling the verified data.
     """
     with sync_playwright() as p:
-        # Launch browser (slow_mo=600 adds a 0.6 second delay between keystrokes for dramatic effect)
-        browser = p.chromium.launch(headless=False, slow_mo=600)
+        browser = p.chromium.launch(headless=False, slow_mo=400)
         page = browser.new_page()
 
-        print("Navigating to Mock ERP System...")
-        page.goto("http://localhost:5173")  # Target React app URL
+        print("\nNavigating to Mock ERP System...")
+        page.goto("http://localhost:5173") 
 
-        # 1. Automatic Login
         print("Logging in hands-free...")
         page.fill("#email", "admin@nexuserp.com")
         page.fill("#password", "securepassword123")
         page.click("#authButton")
 
-        # 2. Wait for Dashboard & The New Trigger Button to Load
+        # Wait for the dashboard to load
         page.wait_for_selector("#triggerRpaBtn")
+        time.sleep(1.5)
 
-        # 3. HUMAN-IN-THE-LOOP PAUSE
-        print("--------------------------------------------------")
-        print("⏸️ DEMO PAUSED: Waiting for human to click 'Trigger Auto-Fill' on the React dashboard...")
-        print("--------------------------------------------------")
+        # --- THE AUTOMATED CLICKS ---
+        print("Bot is clicking 'View PDF' to simulate an audit...")
+        page.click("#viewPdfBtn")
+        time.sleep(1.5)
         
-        # This freezes the Python script infinitely (timeout=0) until the React button is clicked
-        page.wait_for_function("window.startRpaTyping === true", timeout=0)
-        
-        print("▶️ Button clicked! Bot is now typing the data...")
-        time.sleep(1) # Tiny pause for dramatic effect
+        # Bring the main dashboard back into focus (since View PDF opens a new tab)
+        page.bring_to_front()
 
-        # 4. Enter Invoice Data Extracted during Ingestion Phase
+        print("Bot is clicking 'Download'...")
+        page.click("#downloadPdfBtn")
+        time.sleep(1.5)
+
+        print("Bot is clicking 'Trigger Agent'...")
+        page.click("#triggerRpaBtn")
+        time.sleep(1)
+        # ----------------------------
+
         print("Filling invoice data into ERP fields...")
         page.fill("#invoiceId", str(invoice_data.get("invoice_id", "")))
         page.fill("#vendorName", str(invoice_data.get("vendor_name", "")))
@@ -42,15 +47,12 @@ def submit_invoice_to_erp(invoice_data):
         page.fill("#unitPricing", str(invoice_data.get("unit_pricing", "")))
         page.fill("#totalAmount", str(invoice_data.get("total_amount", "")))
 
-        # 5. Submit Form
         print("Submitting invoice entry...")
         page.click("#submitInvoice")
 
-        # 6. Confirm Successful Entry
-        page.wait_for_selector("#successBanner")
         print("✅ Entry confirmed on ERP Dashboard!")
-        print("Demo paused for 10 seconds to view results...")
-        time.sleep(10)
+        print("Demo paused for 6 seconds to view results...")
+        time.sleep(6)
         
         browser.close()
 

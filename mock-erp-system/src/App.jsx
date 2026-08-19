@@ -3,7 +3,6 @@ import './App.css';
 
 export default function App() {
   const [view, setView] = useState('login'); 
-  // New state to manage the active sidebar tab
   const [activeTab, setActiveTab] = useState('data-entry'); 
   
   const [status, setStatus] = useState('');
@@ -173,9 +172,10 @@ export default function App() {
                 <div className="form-header">
                   <h2>Invoice Auto-Entry</h2>
                   <div className="action-buttons">
-                    <button onClick={handleViewPDF} className="btn-secondary">👁️ View PDF</button>
-                    <button onClick={handleDownloadPDF} className="btn-secondary">📥 Download</button>
-                    <button onClick={handleTriggerRPA} id="triggerRpaBtn" className={`btn-primary rpa-btn ${rpaTriggered ? 'active-pulse' : ''}`} disabled={rpaTriggered}>
+                    {/* The buttons the bot will click */}
+                    <button id="viewPdfBtn" onClick={handleViewPDF} className="btn-secondary">👁️ View PDF</button>
+                    <button id="downloadPdfBtn" onClick={handleDownloadPDF} className="btn-secondary">📥 Download</button>
+                    <button id="triggerRpaBtn" onClick={handleTriggerRPA} className={`btn-primary rpa-btn ${rpaTriggered ? 'active-pulse' : ''}`} disabled={rpaTriggered}>
                       {rpaTriggered ? '🤖 Agent Typing...' : '⚡ Trigger Agent'}
                     </button>
                   </div>
