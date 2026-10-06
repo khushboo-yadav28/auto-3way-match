@@ -1,4 +1,5 @@
 import sqlite3
+from notification_engine import alert_manager_of_discrepancy
 
 def verify_three_way_match(invoice_data):
     vendor = invoice_data.get('vendor_name')
@@ -17,6 +18,8 @@ def verify_three_way_match(invoice_data):
 
         if not po_record:
             print(f"❌ Match Failed: No Purchase Order found for vendor: {vendor}")
+            print("Routing to human manager...")
+            alert_manager_of_discrepancy(invoice_data, "No PO Found")
             return False
 
         po_qty, po_price, po_total = po_record
@@ -27,6 +30,8 @@ def verify_three_way_match(invoice_data):
 
         if not grn_record:
             print(f"❌ Match Failed: No Goods Received Note found for vendor: {vendor}")
+            print("Routing to human manager...")
+            alert_manager_of_discrepancy(invoice_data, po_total)
             return False
 
         grn_qty = grn_record[0]
@@ -34,10 +39,14 @@ def verify_three_way_match(invoice_data):
         # 3. Perform the 3-Way Match Logic
         if int(inv_qty) != int(po_qty) or int(inv_qty) != int(grn_qty):
             print("❌ Match Failed: Quantity mismatch between Invoice, PO, and GRN!")
+            print("Routing to human manager...")
+            alert_manager_of_discrepancy(invoice_data, po_total)
             return False
 
         if float(inv_price) != float(po_price) or float(inv_total) != float(po_total):
             print("❌ Match Failed: Pricing mismatch between Invoice and Purchase Order!")
+            print("Routing to human manager...")
+            alert_manager_of_discrepancy(invoice_data, po_total)
             return False
 
         print("✅ Match Successful: Quantities, pricing, and vendor align.")

@@ -13,7 +13,7 @@ export default function App() {
   const [metrics, setMetrics] = useState({ processed: 0, value: 0.00, exceptions: 0 });
   
   const [auditLog, setAuditLog] = useState([
-    { time: new Date().toLocaleTimeString(), msg: "System initialized. Waiting for Agentic RPA connection..." }
+    { time: new Date().toLocaleTimeString(), msg: "SYSTEM INIT: Agentic RPA node online and listening..." }
   ]);
   const logEndRef = useRef(null);
 
@@ -31,18 +31,18 @@ export default function App() {
     setTimeout(() => {
       setIsLoggingIn(false);
       setView('dashboard');
-      addLog("Authentication successful. Secure session started.");
+      addLog("Auth success. Secure uplink established.");
     }, 1500);
   };
 
   const handleTriggerRPA = () => {
     window.startRpaTyping = true; 
     setRpaTriggered(true);
-    addLog("⚡ Autonomous Agent triggered. Awaiting data injection...");
+    addLog("⚡ Autonomous Agent triggered. Awaiting UI injection...");
   };
 
   const handleDownloadPDF = () => {
-    addLog("User downloaded the source PDF for manual audit.");
+    addLog("User downloaded source PDF. Audit trail logged.");
     const link = document.createElement('a');
     link.href = '/invoice_techsolutions.pdf'; 
     link.download = 'Verified_Invoice_Copy.pdf'; 
@@ -52,27 +52,53 @@ export default function App() {
   };
 
   const handleViewPDF = () => {
-    addLog("User opened source PDF in new tab.");
+    addLog("Document requested: Opening secure viewer.");
     window.open('/invoice_techsolutions.pdf', '_blank');
   };
 
   const handleException = () => {
     const id = document.getElementById('invoiceId').value || 'Unknown';
-    addLog(`⚠️ DISCREPANCY FLAGGED: Three-Way Match failed for Invoice ${id}. Halted.`);
-    setMetrics(prev => ({ ...prev, exceptions: prev.exceptions + 1 }));
-    setStatus('🛑 Alert: Invoice rejected due to data mismatch.');
+    addLog(`⚠️ ANOMALY DETECTED: 3-Way Match failed for ${id}. Pipeline halted.`);
     
-    document.getElementById("invoiceForm")?.reset();
+    setMetrics(prev => ({ ...prev, exceptions: prev.exceptions + 1 }));
+    setStatus('🛑 ALERT: Data mismatch detected. Manager Override required.');
+    
     setRpaTriggered(false);
     window.startRpaTyping = false; 
+  };
+
+  const handleOverride = (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    addLog("🔒 MANAGER OVERRIDE: Verifying biometric/credential clearance...");
     
-    setTimeout(() => setStatus(''), 5000);
+    const amount = parseFloat(document.getElementById('totalAmount').value);
+    const id = document.getElementById('invoiceId').value;
+    
+    setTimeout(() => {
+      if (!isNaN(amount)) {
+        setMetrics(prev => ({ 
+          ...prev, 
+          processed: prev.processed + 1, 
+          value: prev.value + amount,
+          exceptions: prev.exceptions - 1 
+        }));
+      }
+      
+      setStatus('✅ OVERRIDE SUCCESS: Record forced to ledger.');
+      addLog(`✅ Exception Cleared: Invoice ${id} manually forced. Value: $${amount}`);
+      
+      setIsSubmitting(false);
+      document.getElementById("invoiceForm").reset();
+      
+      setTimeout(() => setStatus(''), 5000);
+    }, 1500);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    addLog("Validating injected fields against ERP constraints...");
+    addLog("Processing standard commit. Validating payload...");
     
     const formData = new FormData(e.target);
     const amount = parseFloat(formData.get('totalAmount'));
@@ -87,8 +113,8 @@ export default function App() {
         }));
       }
       
-      setStatus('✅ Success: Three-Way Match Verified & Logged!');
-      addLog(`✅ Invoice ${id} successfully recorded. Value: $${amount}`);
+      setStatus('✅ SUCCESS: 3-Way Match Verified & Logged!');
+      addLog(`✅ Invoice ${id} securely committed. Value: $${amount}`);
       
       setIsSubmitting(false);
       setRpaTriggered(false);
@@ -102,15 +128,17 @@ export default function App() {
   if (view === 'login') {
     return (
       <div className="login-wrapper">
+        <div className="light-aurora-bg"></div>
+        <div className="floating-orbs"></div>
         <div className="auth-box glass-panel">
-          <div className="logo-placeholder">🤖 Agentic AI</div>
-          <h2>ERP Access Portal</h2>
-          <p>Sign in to monitor autonomous workflows</p>
+          <div className="logo-placeholder"><span className="pulse-dot"></span> NEXUS AI</div>
+          <h2>ERP Uplink</h2>
+          <p>Agentic Process Automation Portal</p>
           <form onSubmit={handleAuth}>
             <input type="email" id="email" placeholder="Email Address" required disabled={isLoggingIn} />
             <input type="password" id="password" placeholder="Password" required disabled={isLoggingIn} />
             <button type="submit" id="authButton" className="btn-primary" disabled={isLoggingIn}>
-              {isLoggingIn ? 'Authenticating...' : 'Secure Log In'}
+              {isLoggingIn ? 'Establishing Connection...' : 'Initialize Session'}
             </button>
           </form>
         </div>
@@ -120,27 +148,31 @@ export default function App() {
 
   return (
     <div className="dashboard-layout">
-      {/* Sidebar Navigation */}
-      <aside className="sidebar">
+      {/* Background Animations */}
+      <div className="light-aurora-bg"></div>
+      <div className="floating-orbs"></div>
+
+      <aside className="sidebar glass-panel">
         <div className="sidebar-header">
           <h2>🤖 Nexus ERP</h2>
-          <span className="badge">Agentic AI Node</span>
+          <div className="system-status">
+            <span className="pulse-dot"></span> Agent Node Active
+          </div>
         </div>
         <nav className="sidebar-nav">
-          <a href="#" className={activeTab === 'data-entry' ? "active" : ""} onClick={(e) => { e.preventDefault(); setActiveTab('data-entry'); }}>Data Entry</a>
-          <a href="#" className={activeTab === 'purchase-orders' ? "active" : ""} onClick={(e) => { e.preventDefault(); setActiveTab('purchase-orders'); }}>Purchase Orders</a>
-          <a href="#" className={activeTab === 'goods-received' ? "active" : ""} onClick={(e) => { e.preventDefault(); setActiveTab('goods-received'); }}>Goods Received</a>
+          <a href="#" className={activeTab === 'data-entry' ? "active" : ""} onClick={() => setActiveTab('data-entry')}>Data Entry</a>
+          <a href="#" className={activeTab === 'purchase-orders' ? "active" : ""} onClick={() => setActiveTab('purchase-orders')}>Purchase Orders</a>
+          <a href="#" className={activeTab === 'goods-received' ? "active" : ""} onClick={() => setActiveTab('goods-received')}>Goods Received</a>
         </nav>
-        <button onClick={() => setView('login')} className="btn-logout">Disconnect</button>
+        <button onClick={() => setView('login')} className="btn-logout">Terminate Uplink</button>
       </aside>
 
       <main className="main-content">
-        <header className="top-bar">
-          <h1>Intelligent Accounts Payable</h1>
-          <div className="user-profile">Admin User</div>
+        <header className="top-bar glass-panel">
+          <h1>Accounts Payable Command Center</h1>
+          <div className="user-profile">Administrator</div>
         </header>
 
-        {/* Render content based on the active tab */}
         {activeTab === 'data-entry' && (
           <>
             <div className="analytics-grid">
@@ -158,7 +190,7 @@ export default function App() {
                   <p className="stat-value">${metrics.value.toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
                 </div>
               </div>
-              <div className="stat-card glass-panel exception-card">
+              <div className={`stat-card glass-panel ${metrics.exceptions > 0 ? 'exception-active' : ''}`}>
                 <div className="stat-icon red">⚠️</div>
                 <div className="stat-info">
                   <h3>Exceptions</h3>
@@ -170,18 +202,26 @@ export default function App() {
             <div className="content-grid">
               <div className="form-container glass-panel">
                 <div className="form-header">
-                  <h2>Invoice Auto-Entry</h2>
+                  <h2>Invoice Injection Port</h2>
                   <div className="action-buttons">
-                    {/* The buttons the bot will click */}
                     <button id="viewPdfBtn" onClick={handleViewPDF} className="btn-secondary">👁️ View PDF</button>
-                    <button id="downloadPdfBtn" onClick={handleDownloadPDF} className="btn-secondary">📥 Download</button>
+                    <button id="downloadPdfBtn" onClick={handleDownloadPDF} className="btn-secondary">📥 Fetch File</button>
                     <button id="triggerRpaBtn" onClick={handleTriggerRPA} className={`btn-primary rpa-btn ${rpaTriggered ? 'active-pulse' : ''}`} disabled={rpaTriggered}>
-                      {rpaTriggered ? '🤖 Agent Typing...' : '⚡ Trigger Agent'}
+                      {rpaTriggered ? '🤖 Agent Inbound...' : '⚡ Sync Agent'}
                     </button>
                   </div>
                 </div>
 
-                {status && <div className="status-banner" id="successBanner">{status}</div>}
+                {status && (
+                  <div className="status-banner" id="successBanner" 
+                    style={{ 
+                      background: status.includes('ALERT') ? 'rgba(254, 226, 226, 0.9)' : 'rgba(209, 250, 229, 0.9)', 
+                      color: status.includes('ALERT') ? '#991b1b' : '#065f46', 
+                      border: `1px solid ${status.includes('ALERT') ? '#f87171' : '#34d399'}` 
+                    }}>
+                    {status}
+                  </div>
+                )}
                 
                 <form id="invoiceForm" onSubmit={handleSubmit}>
                   <div className="input-row">
@@ -209,19 +249,32 @@ export default function App() {
                     <input type="number" step="0.01" id="totalAmount" name="totalAmount" required disabled={isSubmitting} />
                   </div>
                   
-                  <div style={{ display: 'flex', gap: '16px', marginTop: '16px' }}>
-                    <button type="submit" className="btn-submit" id="submitInvoice" disabled={isSubmitting} style={{ flex: 1 }}>
-                      {isSubmitting ? 'Committing...' : 'Commit Record'}
-                    </button>
-                    <button type="button" id="logExceptionBtn" onClick={handleException} disabled={isSubmitting} style={{ flex: 1, padding: '14px', background: '#ef4444', color: 'white', borderRadius: '6px', fontWeight: '600', border: 'none', cursor: 'pointer' }}>
-                      Flag Discrepancy
-                    </button>
+                  <div style={{ display: 'flex', gap: '16px', marginTop: '24px' }}>
+                    {status.includes('ALERT') ? (
+                      <>
+                        <button type="button" onClick={handleOverride} disabled={isSubmitting} className="btn-override">
+                          {isSubmitting ? 'AUTHORIZING...' : '🚨 OVERRIDE: FORCE APPROVE'}
+                        </button>
+                        <button type="button" onClick={() => { setStatus(''); document.getElementById("invoiceForm").reset(); addLog("System cleared. Standing by."); }} disabled={isSubmitting} className="btn-reject">
+                          REJECT & CLEAR
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button type="submit" className="btn-submit" id="submitInvoice" disabled={isSubmitting} style={{ flex: 1 }}>
+                          {isSubmitting ? 'COMMITTING...' : 'COMMIT RECORD'}
+                        </button>
+                        <button type="button" id="logExceptionBtn" onClick={handleException} disabled={isSubmitting} className="btn-flag">
+                          FLAG ANOMALY
+                        </button>
+                      </>
+                    )}
                   </div>
                 </form>
               </div>
 
               <div className="audit-log glass-panel">
-                <h2>Live System Audit Log</h2>
+                <h2>Live Agent Telemetry</h2>
                 <div className="log-window">
                   {auditLog.map((log, idx) => (
                     <div key={idx} className="log-entry">
@@ -236,86 +289,14 @@ export default function App() {
           </>
         )}
 
-        {/* Purchase Orders View */}
-        {activeTab === 'purchase-orders' && (
+        {/* PO & GRN Views */}
+        {(activeTab === 'purchase-orders' || activeTab === 'goods-received') && (
           <div className="glass-panel" style={{ padding: '32px' }}>
-            <h2 style={{ marginBottom: '8px' }}>Purchase Orders Directory</h2>
-            <p style={{ color: '#6b7280', marginBottom: '32px' }}>Read-only view of approved vendor contracts and negotiated rates.</p>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-              <thead>
-                <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
-                  <th style={{ padding: '12px 8px', color: '#374151' }}>PO ID</th>
-                  <th style={{ padding: '12px 8px', color: '#374151' }}>Vendor Name</th>
-                  <th style={{ padding: '12px 8px', color: '#374151' }}>Approved Qty</th>
-                  <th style={{ padding: '12px 8px', color: '#374151' }}>Unit Price</th>
-                  <th style={{ padding: '12px 8px', color: '#374151' }}>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
-                  <td style={{ padding: '16px 8px', fontWeight: '600' }}>PO-1001</td>
-                  <td style={{ padding: '16px 8px' }}>TechSolutions Inc.</td>
-                  <td style={{ padding: '16px 8px' }}>10</td>
-                  <td style={{ padding: '16px 8px' }}>$1,000.00</td>
-                  <td style={{ padding: '16px 8px' }}><span style={{ color: '#065f46', background: '#d1fae5', padding: '4px 12px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold' }}>Active</span></td>
-                </tr>
-                <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
-                  <td style={{ padding: '16px 8px', fontWeight: '600' }}>PO-1002</td>
-                  <td style={{ padding: '16px 8px' }}>OfficePro Supplies</td>
-                  <td style={{ padding: '16px 8px' }}>50</td>
-                  <td style={{ padding: '16px 8px' }}>$20.00</td>
-                  <td style={{ padding: '16px 8px' }}><span style={{ color: '#065f46', background: '#d1fae5', padding: '4px 12px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold' }}>Active</span></td>
-                </tr>
-                <tr>
-                  <td style={{ padding: '16px 8px', fontWeight: '600' }}>PO-1003</td>
-                  <td style={{ padding: '16px 8px' }}>GlobalHardware Corp</td>
-                  <td style={{ padding: '16px 8px' }}>5</td>
-                  <td style={{ padding: '16px 8px' }}>$500.00</td>
-                  <td style={{ padding: '16px 8px' }}><span style={{ color: '#065f46', background: '#d1fae5', padding: '4px 12px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold' }}>Active</span></td>
-                </tr>
-              </tbody>
-            </table>
+            <h2>{activeTab === 'purchase-orders' ? 'Secure Ledger: Purchase Orders' : 'Warehouse Node: Goods Received'}</h2>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '32px' }}>Read-only database view synchronized with main node.</p>
+            <div className="placeholder-table" style={{ color: 'var(--text-main)' }}>Data connection established. Records encrypted.</div>
           </div>
         )}
-
-        {/* Goods Received View */}
-        {activeTab === 'goods-received' && (
-          <div className="glass-panel" style={{ padding: '32px' }}>
-            <h2 style={{ marginBottom: '8px' }}>Warehouse Goods Received (GRN)</h2>
-            <p style={{ color: '#6b7280', marginBottom: '32px' }}>Warehouse delivery logs used for matching physical inventory to invoices.</p>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-              <thead>
-                <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
-                  <th style={{ padding: '12px 8px', color: '#374151' }}>GRN ID</th>
-                  <th style={{ padding: '12px 8px', color: '#374151' }}>Linked PO</th>
-                  <th style={{ padding: '12px 8px', color: '#374151' }}>Vendor Name</th>
-                  <th style={{ padding: '12px 8px', color: '#374151' }}>Physically Received</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
-                  <td style={{ padding: '16px 8px', fontWeight: '600' }}>GRN-5001</td>
-                  <td style={{ padding: '16px 8px', color: '#3b82f6' }}>PO-1001</td>
-                  <td style={{ padding: '16px 8px' }}>TechSolutions Inc.</td>
-                  <td style={{ padding: '16px 8px', fontWeight: '600', color: '#111827' }}>10 units</td>
-                </tr>
-                <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
-                  <td style={{ padding: '16px 8px', fontWeight: '600' }}>GRN-5002</td>
-                  <td style={{ padding: '16px 8px', color: '#3b82f6' }}>PO-1002</td>
-                  <td style={{ padding: '16px 8px' }}>OfficePro Supplies</td>
-                  <td style={{ padding: '16px 8px', fontWeight: '600', color: '#111827' }}>50 units</td>
-                </tr>
-                <tr>
-                  <td style={{ padding: '16px 8px', fontWeight: '600' }}>GRN-5003</td>
-                  <td style={{ padding: '16px 8px', color: '#3b82f6' }}>PO-1003</td>
-                  <td style={{ padding: '16px 8px' }}>GlobalHardware Corp</td>
-                  <td style={{ padding: '16px 8px', fontWeight: '600', color: '#111827' }}>5 units</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        )}
-
       </main>
     </div>
   );

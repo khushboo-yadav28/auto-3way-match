@@ -1,53 +1,49 @@
 import time
-from ingestion_engine import download_invoices_from_gmail, parse_invoice
+from ingestion_engine import download_invoices_from_gmail
+from extraction_engine import extract_text_from_pdf, extract_invoice_data
 from verification_brain import verify_three_way_match
 from playwright_bot import submit_invoice_to_erp, log_exception_to_erp
 
 def run_pipeline():
-    print("\n=== Waking Up: Checking Queue ===")
-    pdf_path = download_invoices_from_gmail()
-    
-    # If no email is found, the function quietly ends and the bot goes back to sleep
-    if not pdf_path:
-        return 
-
-    invoice_data = parse_invoice(pdf_path)
-    
-    if not invoice_data:
-        return
-
-    print("\n=== Initiating Three-Way Match Verification ===")
-    is_valid = verify_three_way_match(invoice_data)
-
-    print("\n=== Determining Output Process ===")
-    if is_valid:
-        print("Executing Process A (Success): Initiating Playwright Web RPA...")
-        try:
-            submit_invoice_to_erp(invoice_data)
-        except Exception as e:
-            print(f"Playwright Automation Failed: {e}")
-    else:
-        print("Executing Process B (Exception): Three-Way Match Failed!")
-        print("Initiating UI alert protocol...")
-        try:
-            log_exception_to_erp(invoice_data)
-        except Exception as e:
-            print(f"Playwright Automation Failed: {e}")
+    while True:
+        print("\n=== Waking Up: Checking Queue ===")
+        print("Scanning Gmail for unread invoices...")
+        
+        # 1. Check Email
+        pdf_path = download_invoices_from_gmail()
+        
+        if pdf_path:
+            print(f"Parsing document: {pdf_path}")
             
-    print("=== Pipeline Cycle Complete ===")
+            # 2. Extract Text
+            raw_text = extract_text_from_pdf(pdf_path)
+            
+            # 3. Extract Data
+            invoice_data = extract_invoice_data(raw_text)
+            print(f"Structured transaction data: {invoice_data}")
+            
+            # Check if extraction was completely successful
+            if None in invoice_data.values():
+                print("⚠️ Warning: Some fields could not be extracted from the PDF. Skipping...")
+            else:
+                # 4. Verify 3-Way Match & Send Email if Failed
+                print("Checking ERP Database for 3-Way Match...")
+                is_match = verify_three_way_match(invoice_data)
+                
+                # 5. Trigger Frontend UI Automation
+                if is_match:
+                    print("Match successful! Triggering RPA Agent for automated UI entry...")
+                    submit_invoice_to_erp(invoice_data)
+                else:
+                    print("Match failed! Triggering RPA Agent to flag discrepancy in UI...")
+                    log_exception_to_erp(invoice_data)
+                    
+        else:
+            print("No new invoices found.")
+            
+        print("\n💤 Agent resting for 30 seconds...")
+        time.sleep(30)
 
 if __name__ == "__main__":
     print("🚀 Agentic RPA Worker Started. Press Ctrl+C to stop.")
-    
-    try:
-        # The Infinite Loop: This keeps the script running continuously
-        while True:
-            run_pipeline()
-            
-            # Polling Interval: Wait 30 seconds before checking Gmail again
-            print("\n💤 Agent resting for 30 seconds...")
-            time.sleep(30)
-            
-    except KeyboardInterrupt:
-        # Allows you to smoothly kill the script in the terminal using Ctrl + C
-        print("\n🛑 Agent shutdown gracefully by human manager.")
+    run_pipeline()
