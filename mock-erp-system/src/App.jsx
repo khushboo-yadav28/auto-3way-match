@@ -1,7 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import './App.css';
 
 export default function App() {
+  const { t, i18n } = useTranslation();
+  
   const [view, setView] = useState('login'); 
   const [activeTab, setActiveTab] = useState('data-entry'); 
   
@@ -125,13 +128,18 @@ export default function App() {
     }, 1500);
   };
 
+  const changeLanguage = (e) => {
+    i18n.changeLanguage(e.target.value);
+    addLog(`🌐 UI Language switched to: ${e.target.value.toUpperCase()}`);
+  };
+
   if (view === 'login') {
     return (
       <div className="login-wrapper">
         <div className="light-aurora-bg"></div>
         <div className="floating-orbs"></div>
         <div className="auth-box glass-panel">
-          <div className="logo-placeholder"><span className="pulse-dot"></span> NEXUS AI</div>
+          <div className="logo-placeholder"><span className="pulse-dot"></span> KINETIX AI</div>
           <h2>ERP Uplink</h2>
           <p>Agentic Process Automation Portal</p>
           <form onSubmit={handleAuth}>
@@ -154,7 +162,7 @@ export default function App() {
 
       <aside className="sidebar glass-panel">
         <div className="sidebar-header">
-          <h2>🤖 Nexus ERP</h2>
+          <h2>🤖 Kinetix ERP</h2>
           <div className="system-status">
             <span className="pulse-dot"></span> Agent Node Active
           </div>
@@ -168,9 +176,20 @@ export default function App() {
       </aside>
 
       <main className="main-content">
-        <header className="top-bar glass-panel">
-          <h1>Accounts Payable Command Center</h1>
-          <div className="user-profile">Administrator</div>
+        <header className="top-bar glass-panel flex justify-between items-center p-4">
+          <h1>{t('title', 'Accounts Payable Command Center')}</h1>
+          <div className="flex items-center gap-4">
+            {/* Language Selector Dropdown */}
+            <div className="flex items-center gap-2 text-white">
+              <label className="text-sm font-medium">🌐 {t('languageSelect', 'Lang')}:</label>
+              <select onChange={changeLanguage} defaultValue={i18n.language} className="bg-slate-800 text-white p-1 rounded border border-slate-600 text-sm">
+                <option value="en">English</option>
+                <option value="hi">हिन्दी (Hindi)</option>
+                <option value="gu">ગુજરાતી (Gujarati)</option>
+              </select>
+            </div>
+            <div className="user-profile">Administrator</div>
+          </div>
         </header>
 
         {activeTab === 'data-entry' && (
